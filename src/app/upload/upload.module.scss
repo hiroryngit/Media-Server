@@ -1,0 +1,135 @@
+.main {
+  padding: 2rem;
+  min-height: calc(100vh - 57px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzone {
+  width: 100%;
+  max-width: 600px;
+  min-height: 300px;
+  border: 2px dashed rgba(128, 128, 128, 0.4);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 2rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &:hover {
+    border-color: rgba(128, 128, 128, 0.6);
+  }
+}
+
+.dropzoneActive {
+  border-color: var(--foreground);
+  background-color: rgba(128, 128, 128, 0.1);
+}
+
+.dropzoneIcon {
+  color: rgba(128, 128, 128, 0.5);
+}
+
+.dropzoneText {
+  color: rgba(128, 128, 128, 0.7);
+  font-size: 1rem;
+  text-align: center;
+}
+
+.selectButton {
+  padding: 0.5rem 1.25rem;
+  background: var(--foreground);
+  color: var(--background);
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+}
+
+.previewArea {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.previewMedia {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+.fileName {
+  font-size: 0.875rem;
+  color: rgba(128, 128, 128, 0.8);
+  word-break: break-all;
+  text-align: center;
+}
+
+.uploadButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  background: var(--foreground);
+  color: var(--background);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.progressArea {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--foreground);
+  border-radius: 4px;
+  transition: width 0.2s;
+}
+
+.progressText {
+  font-size: 0.875rem;
+  color: rgba(128, 128, 128, 0.8);
+}

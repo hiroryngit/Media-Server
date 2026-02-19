@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PanelLeft, ArrowLeftFromLine, Bookmark, Share2, Settings, LogOut } from 'lucide-react';
+import { PanelLeft, ArrowLeftFromLine, Bookmark, Share2, Settings, LogOut, Upload, Trash2 } from 'lucide-react';
 import { logout } from '@/app/actions/logout';
 import styles from './Header.module.scss';
 
@@ -11,15 +11,11 @@ export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleBack = () => {
-    // window.history の前のページがログイン画面(/)ならログアウト
-    // navigation API が使えない場合のフォールバックとして、
-    // history.length が 1 以下なら直接ログアウト
     if (window.history.length <= 1) {
       logout();
       return;
     }
 
-    // referrer でログインページからの遷移かチェック
     const referrer = document.referrer;
     const origin = window.location.origin;
     if (
@@ -34,8 +30,10 @@ export default function Header() {
   };
 
   const menuItems = [
+    { label: 'アップロード', icon: Upload, onClick: () => { setMenuOpen(false); router.push('/upload'); } },
     { label: 'ブックマーク', icon: Bookmark, onClick: () => setMenuOpen(false) },
     { label: '共有', icon: Share2, onClick: () => setMenuOpen(false) },
+    { label: 'コンテンツ削除', icon: Trash2, onClick: () => { setMenuOpen(false); router.push('/delete'); } },
     { label: '管理', icon: Settings, onClick: () => setMenuOpen(false) },
     {
       label: 'ログアウト',
