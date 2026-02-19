@@ -43,3 +43,37 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1rem 0;
+}
+
+.pageLink {
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(128, 128, 128, 0.1);
+  }
+}
+
+.pageLinkDisabled {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: rgba(128, 128, 128, 0.4);
+}
+
+.pageInfo {
+  font-size: 0.875rem;
+  color: rgba(128, 128, 128, 0.8);
+}
