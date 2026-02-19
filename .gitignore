@@ -45,6 +45,9 @@ next-env.d.ts
 # uploaded files
 /public/uploads/
 
+# gocryptfs encrypted data
+/data/encrypted/
+
 # Prisma / SQLite
 *.db
 *.db-journal
