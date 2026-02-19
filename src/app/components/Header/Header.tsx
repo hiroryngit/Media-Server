@@ -1,27 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { PanelLeft, ArrowLeftFromLine, Bookmark, Share2, Settings, LogOut, Upload, Trash2 } from 'lucide-react';
 import { logout } from '@/app/actions/logout';
 import styles from './Header.module.scss';
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleBack = () => {
-    if (window.history.length <= 1) {
-      logout();
-      return;
-    }
-
-    const referrer = document.referrer;
-    const origin = window.location.origin;
-    if (
-      referrer === origin + '/' ||
-      referrer === origin
-    ) {
+    // /dashboardからの「戻る」はログアウト（ログイン画面に戻る）
+    if (pathname === '/dashboard') {
       logout();
       return;
     }

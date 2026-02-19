@@ -1,5 +1,5 @@
 import { execSync } from 'child_process';
-import { mkdirSync, rmSync, writeFileSync, unlinkSync } from 'fs';
+import { mkdirSync, rmSync, rmdirSync, writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 import path from 'path';
 
@@ -71,7 +71,17 @@ export function mountEncryptedDir(userId: string, hashedPassword: string): void 
   const cipherDir = path.join(DATA_DIR, userId);
   const mountPoint = path.join(MOUNT_DIR, userId);
 
-  mkdirSync(mountPoint, { recursive: true });
+  // 遅延アンマウントの残骸やstaleマウントがあればクリーンアップ
+  try {
+    execSync(`mountpoint -q "${mountPoint}" 2>/dev/null`);
+    // まだマウントされている → アンマウント
+    execSync(`fusermount -u -z "${mountPoint}"`, { stdio: 'pipe' });
+  } catch {
+    // マウントされていない → 何もしない
+  }
+
+  // ディレクトリがなければ作成、あればそのまま使う
+  mkdirSync(mountPoint, { recursive: true, mode: 0o755 });
 
   withPasswordFile(hashedPassword, (passFile) => {
     execSync(
@@ -128,12 +138,19 @@ export function changeEncryptedDirPassword(
 }
 
 /**
- * gocryptfsのマウントを解除する
+ * gocryptfsのマウントを解除し、マウントポイントディレクトリを削除する
+ * ログアウト・セッション切れ時に使用
+ * 順番厳守: 1.アンマウント → 2.rmdir（空ディレクトリ削除のみ）
+ * rmdirは空でないディレクトリを削除できないため、万一アンマウント前に呼ばれてもデータは消えない
  */
 export function unmountEncryptedDir(userId: string): void {
   const mountPoint = path.join(MOUNT_DIR, userId);
 
-  execSync(`fusermount -u "${mountPoint}"`, { stdio: 'pipe' });
+  // 1. 必ず先にアンマウント
+  execSync(`fusermount -u -z "${mountPoint}"`, { stdio: 'pipe' });
+
+  // 2. アンマウント成功後にのみ空のマウントポイントを削除
+  rmdirSync(mountPoint);
 }
 
 /**
