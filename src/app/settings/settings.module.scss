@@ -1,0 +1,131 @@
+.main {
+  padding: 2rem;
+  min-height: calc(100vh - 57px);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.section {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+
+.success {
+  font-size: 0.875rem;
+  color: #27ae60;
+  margin-bottom: 1rem;
+}
+
+.primaryButton {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: #3498db;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) {
+    background: #2980b9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.dangerSection {
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.dangerTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #e74c3c;
+  margin-bottom: 0.75rem;
+}
+
+.dangerDescription {
+  font-size: 0.875rem;
+  color: rgba(128, 128, 128, 0.8);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.inputGroup {
+  margin-bottom: 1rem;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(128, 128, 128, 0.6);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.error {
+  font-size: 0.875rem;
+  color: #e74c3c;
+  margin-bottom: 1rem;
+}
+
+.deleteButton {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) {
+    background: #c0392b;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

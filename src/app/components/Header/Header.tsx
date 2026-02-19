@@ -34,7 +34,7 @@ export default function Header() {
     { label: 'ブックマーク', icon: Bookmark, onClick: () => setMenuOpen(false) },
     { label: '共有', icon: Share2, onClick: () => setMenuOpen(false) },
     { label: 'コンテンツ削除', icon: Trash2, onClick: () => { setMenuOpen(false); router.push('/delete'); } },
-    { label: '管理', icon: Settings, onClick: () => setMenuOpen(false) },
+    { label: '管理', icon: Settings, onClick: () => { setMenuOpen(false); router.push('/settings'); } },
     {
       label: 'ログアウト',
       icon: LogOut,
