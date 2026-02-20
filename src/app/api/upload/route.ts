@@ -3,6 +3,7 @@ import { prisma } from '@/app/lib/db';
 import { writeFile, mkdir, unlink } from 'fs/promises';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import { convertToHls, generateThumbnail, optimizeImage } from '@/app/lib/ffmpeg';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -134,12 +135,18 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  // バックグラウンドでffmpeg処理（レスポンスとは切り離す）
-  if (type === 'image') {
-    processImage(media.id, tempPath, uploadDir, baseName).catch(console.error);
-  } else {
-    processVideo(media.id, tempPath, uploadDir, baseName).catch(console.error);
-  }
+  // レスポンス送信後にffmpeg処理を実行（リクエストライフサイクルから切り離す）
+  after(async () => {
+    try {
+      if (type === 'image') {
+        await processImage(media.id, tempPath, uploadDir, baseName);
+      } else {
+        await processVideo(media.id, tempPath, uploadDir, baseName);
+      }
+    } catch (error) {
+      console.error('メディア処理エラー:', error);
+    }
+  });
 
   return NextResponse.json({ success: true });
 }

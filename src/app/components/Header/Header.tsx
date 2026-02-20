@@ -24,7 +24,7 @@ export default function Header({ username }: { username: string }) {
   const menuItems = [
     { label: 'アップロード', icon: Upload, onClick: () => { setMenuOpen(false); router.push('/upload'); } },
     { label: 'ブックマーク', icon: Bookmark, onClick: () => { setMenuOpen(false); router.push('/bookmarks'); } },
-    { label: '共有', icon: Share2, onClick: () => setMenuOpen(false) },
+    { label: '共有', icon: Share2, onClick: () => { setMenuOpen(false); router.push('/shared'); } },
     { label: 'コンテンツ削除', icon: Trash2, onClick: () => { setMenuOpen(false); router.push('/delete'); } },
     { label: '管理', icon: Settings, onClick: () => { setMenuOpen(false); router.push('/settings'); } },
     {

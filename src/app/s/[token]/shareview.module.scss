@@ -1,0 +1,124 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.loadingText {
+  color: rgba(128, 128, 128, 0.6);
+}
+
+.errorBox {
+  padding: 1.5rem 2rem;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 8px;
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.05);
+}
+
+.authCard {
+  width: 100%;
+  max-width: 360px;
+  padding: 2rem;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  border-radius: 12px;
+}
+
+.authTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.authSubtitle {
+  font-size: 0.8125rem;
+  color: rgba(128, 128, 128, 0.7);
+  margin-bottom: 1.25rem;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.authInput {
+  padding: 0.625rem 0.75rem;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  background: transparent;
+  color: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(128, 128, 128, 0.5);
+  }
+}
+
+.authError {
+  font-size: 0.8125rem;
+  color: #e74c3c;
+}
+
+.authButton {
+  padding: 0.625rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #3498db;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: #2980b9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.viewerTitle {
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.videoContainer {
+  width: 100%;
+  max-width: 960px;
+}
+
+.video {
+  width: 100%;
+  border-radius: 8px;
+  background: #000;
+}
+
+.imageContainer {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  justify-content: center;
+}
+
+.image {
+  max-width: 100%;
+  max-height: calc(100vh - 150px);
+  object-fit: contain;
+  border-radius: 8px;
+}

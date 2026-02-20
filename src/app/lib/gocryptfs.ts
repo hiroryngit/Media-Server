@@ -5,6 +5,7 @@ import path from 'path';
 
 const DATA_DIR = path.join(process.cwd(), 'data', 'encrypted');
 const MOUNT_DIR = path.join(process.cwd(), 'public', 'uploads');
+const SHARE_DIR = path.join(process.cwd(), 'public', 'share');
 
 /**
  * パスワードを一時ファイルに書き出し、gocryptfsの-extpassに渡す
@@ -151,6 +152,52 @@ export function unmountEncryptedDir(userId: string): void {
 
   // 2. アンマウント成功後にのみ空のマウントポイントを削除
   rmdirSync(mountPoint);
+}
+
+/**
+ * 共有閲覧者用: gocryptfsの暗号化ディレクトリを/share/{ownerId}/にマウントする
+ * オーナーの/uploads/マウントとは独立した、閲覧者専用のマウントポイント
+ * 既にマウント済みの場合は何もしない
+ */
+export function mountShareDir(ownerId: string, hashedPassword: string): void {
+  const cipherDir = path.join(DATA_DIR, ownerId);
+  const mountPoint = path.join(SHARE_DIR, ownerId);
+
+  // 既にマウントされていたらスキップ
+  try {
+    execSync(`mountpoint -q "${mountPoint}" 2>/dev/null`);
+    return; // マウント済み
+  } catch {
+    // マウントされていない → 続行
+  }
+
+  mkdirSync(mountPoint, { recursive: true, mode: 0o755 });
+
+  withPasswordFile(hashedPassword, (passFile) => {
+    execSync(
+      `gocryptfs -q -ro ${extpass(passFile)} "${cipherDir}" "${mountPoint}"`,
+      { stdio: 'pipe' }
+    );
+  });
+}
+
+/**
+ * 共有閲覧者用: /share/{ownerId}/のマウントを解除する
+ * 全閲覧者のセッションが切れたときに呼ぶ
+ */
+export function unmountShareDir(ownerId: string): void {
+  const mountPoint = path.join(SHARE_DIR, ownerId);
+
+  try {
+    execSync(`mountpoint -q "${mountPoint}" 2>/dev/null`);
+  } catch {
+    // マウントされていない → rmdirだけ試みる
+    try { rmdirSync(mountPoint); } catch { /* 存在しなければ無視 */ }
+    return;
+  }
+
+  execSync(`fusermount -u -z "${mountPoint}"`, { stdio: 'pipe' });
+  try { rmdirSync(mountPoint); } catch { /* cleanup best-effort */ }
 }
 
 /**

@@ -19,16 +19,32 @@ model User {
 }
 
 model Media {
-  id            String   @id @default(uuid())
-  type          String   // "image" | "video"
+  id            String     @id @default(uuid())
+  type          String     // "image" | "video"
   name          String
   fileSize      Int
   path          String
   thumbnailPath String?
-  status        String   @default("processing") // "processing" | "ready" | "error"
-  isBookmarked  Boolean  @default(false)
-  isShared      Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  status        String     @default("processing") // "processing" | "ready" | "error"
+  isBookmarked  Boolean    @default(false)
+  isShared      Boolean    @default(false)
+  createdAt     DateTime   @default(now())
   userId        String
-  user          User     @relation(fields: [userId], references: [id])
+  user          User       @relation(fields: [userId], references: [id])
+  shareLink     ShareLink?
+}
+
+model ShareLink {
+  id        String   @id @default(uuid())
+  mediaId   String   @unique
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  password  String?  // plaintext, null = no password required
+  createdAt DateTime @default(now())
+}
+
+model ViewerSession {
+  id        String   @id @default(uuid())
+  ownerId   String
+  createdAt DateTime @default(now())
 }
