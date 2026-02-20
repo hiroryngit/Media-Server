@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { RefreshCw } from 'lucide-react';
 import styles from './settings.module.scss';
 
 export default function SettingsClient() {
@@ -17,8 +18,20 @@ export default function SettingsClient() {
 
   // アカウント削除
   const [deletePassword, setDeletePassword] = useState('');
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [captchaUrl, setCaptchaUrl] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+
+  const refreshCaptcha = useCallback(() => {
+    // タイムスタンプでキャッシュ回避
+    setCaptchaUrl(`/api/captcha?t=${Date.now()}`);
+    setCaptchaInput('');
+  }, []);
+
+  useEffect(() => {
+    refreshCaptcha();
+  }, [refreshCaptcha]);
 
   const handleChangePassword = async () => {
     setPasswordError('');
@@ -71,6 +84,10 @@ export default function SettingsClient() {
       setDeleteError('パスワードを入力してください');
       return;
     }
+    if (!captchaInput) {
+      setDeleteError('画像に表示されている文字を入力してください');
+      return;
+    }
 
     const confirmed = window.confirm(
       '本当にアカウントを削除しますか？\nアップロードしたすべてのデータが完全に失われます。この操作は取り消せません。'
@@ -84,19 +101,21 @@ export default function SettingsClient() {
       const res = await fetch('/api/account/delete', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: deletePassword }),
+        body: JSON.stringify({ password: deletePassword, captcha: captchaInput }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         setDeleteError(data.error || 'アカウントの削除に失敗しました');
+        refreshCaptcha();
         return;
       }
 
       router.push('/');
     } catch {
       setDeleteError('削除中にエラーが発生しました');
+      refreshCaptcha();
     } finally {
       setDeleting(false);
     }
@@ -189,12 +208,47 @@ export default function SettingsClient() {
           />
         </div>
 
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>
+            下の画像に表示されている文字を入力
+          </label>
+          <div className={styles.captchaRow}>
+            {captchaUrl && (
+              <img
+                src={captchaUrl}
+                alt="CAPTCHA"
+                className={styles.captchaImage}
+                draggable={false}
+              />
+            )}
+            <button
+              className={styles.captchaRefresh}
+              onClick={refreshCaptcha}
+              type="button"
+              aria-label="CAPTCHAを更新"
+              disabled={deleting}
+            >
+              <RefreshCw size={18} />
+            </button>
+          </div>
+          <input
+            id="captchaInput"
+            type="text"
+            value={captchaInput}
+            onChange={(e) => setCaptchaInput(e.target.value)}
+            placeholder="画像の文字を入力"
+            className={styles.input}
+            autoComplete="off"
+            disabled={deleting}
+          />
+        </div>
+
         {deleteError && <p className={styles.error}>{deleteError}</p>}
 
         <button
           className={styles.deleteButton}
           onClick={handleDeleteAccount}
-          disabled={!deletePassword || deleting}
+          disabled={!deletePassword || !captchaInput || deleting}
         >
           {deleting ? '削除中...' : 'アカウントを削除'}
         </button>

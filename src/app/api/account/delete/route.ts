@@ -17,10 +17,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'ユーザーが見つかりません' }, { status: 401 });
   }
 
-  // パスワード確認
+  // CAPTCHA検証
+  const captchaCode = cookieStore.get('captcha_code')?.value;
   const body = await request.json();
-  const { password } = body;
+  const { password, captcha } = body;
 
+  if (!captcha || !captchaCode) {
+    return NextResponse.json({ error: 'CAPTCHAを入力してください' }, { status: 400 });
+  }
+
+  if (captcha !== captchaCode) {
+    // 使用済みのCAPTCHAを無効化（リトライ時は再取得が必要）
+    cookieStore.delete('captcha_code');
+    return NextResponse.json({ error: 'CAPTCHAが正しくありません' }, { status: 400 });
+  }
+
+  // CAPTCHA使用済み → 削除
+  cookieStore.delete('captcha_code');
+
+  // パスワード確認
   if (!password) {
     return NextResponse.json({ error: 'パスワードを入力してください' }, { status: 400 });
   }

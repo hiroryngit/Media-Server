@@ -52,3 +52,5 @@ next-env.d.ts
 *.db
 *.db-journal
 /prisma/migrations/
+
+/.grok/
