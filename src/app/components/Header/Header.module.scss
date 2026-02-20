@@ -10,6 +10,26 @@
   z-index: 100;
 }
 
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.userIcon {
+  color: rgba(128, 128, 128, 0.6);
+  flex-shrink: 0;
+}
+
+.username {
+  font-size: 0.875rem;
+  font-weight: 500;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .iconButton {
   display: flex;
   align-items: center;
@@ -64,6 +84,27 @@
 
 .menuOpen {
   transform: translateX(0);
+}
+
+.menuProfile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.menuProfileIcon {
+  color: rgba(128, 128, 128, 0.6);
+  flex-shrink: 0;
+}
+
+.menuProfileName {
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .menuList {

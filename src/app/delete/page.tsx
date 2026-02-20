@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { prisma } from '@/app/lib/db';
-import Header from '@/app/components/Header/Header';
+import HeaderServer from '@/app/components/Header/HeaderServer';
 import DeleteClient from './DeleteClient';
 
 export default async function DeletePage() {
@@ -16,7 +16,7 @@ export default async function DeletePage() {
 
   return (
     <>
-      <Header />
+      <HeaderServer />
       <DeleteClient mediaList={mediaList} />
     </>
   );

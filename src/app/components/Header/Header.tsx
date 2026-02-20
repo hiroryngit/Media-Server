@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { PanelLeft, ArrowLeftFromLine, Bookmark, Share2, Settings, LogOut, Upload, Trash2 } from 'lucide-react';
+import { PanelLeft, ArrowLeftFromLine, Bookmark, Share2, Settings, LogOut, Upload, Trash2, UserCircle } from 'lucide-react';
 import { logout } from '@/app/actions/logout';
 import styles from './Header.module.scss';
 
-export default function Header() {
+export default function Header({ username }: { username: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -47,6 +47,10 @@ export default function Header() {
         >
           <ArrowLeftFromLine size={24} />
         </button>
+        <div className={styles.userInfo}>
+          <UserCircle size={22} className={styles.userIcon} />
+          <span className={styles.username}>{username}</span>
+        </div>
         <button
           className={styles.iconButton}
           onClick={() => setMenuOpen(true)}
@@ -64,6 +68,10 @@ export default function Header() {
 
       {/* スライドメニュー */}
       <nav className={`${styles.menu} ${menuOpen ? styles.menuOpen : ''}`}>
+        <div className={styles.menuProfile}>
+          <UserCircle size={36} className={styles.menuProfileIcon} />
+          <span className={styles.menuProfileName}>{username}</span>
+        </div>
         <ul className={styles.menuList}>
           {menuItems.map((item) => (
             <li key={item.label}>

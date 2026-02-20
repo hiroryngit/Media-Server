@@ -1,10 +1,10 @@
-import Header from '@/app/components/Header/Header';
+import HeaderServer from '@/app/components/Header/HeaderServer';
 import SettingsClient from './SettingsClient';
 
 export default function SettingsPage() {
   return (
     <>
-      <Header />
+      <HeaderServer />
       <SettingsClient />
     </>
   );

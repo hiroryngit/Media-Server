@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { prisma } from '@/app/lib/db';
-import Header from '@/app/components/Header/Header';
+import HeaderServer from '@/app/components/Header/HeaderServer';
 import UploadButton from '@/app/components/UploadButton/UploadButton';
+import MediaCard from './MediaCard';
 import Pagination from './Pagination';
 import styles from './dashboard.module.scss';
 
@@ -34,7 +35,7 @@ export default async function Dashboard({
 
   return (
     <>
-      <Header />
+      <HeaderServer />
       <main className={styles.main}>
         {mediaList.length === 0 && currentPage === 1 ? (
           <div className={styles.emptyState}>
@@ -45,14 +46,7 @@ export default async function Dashboard({
           <>
             <div className={styles.mediaGrid}>
               {mediaList.map((media) => (
-                <div key={media.id} className={styles.mediaCard}>
-                  {media.type === 'image' ? (
-                    <img src={media.path} alt={media.name} className={styles.mediaThumbnail} />
-                  ) : (
-                    <video src={media.path} className={styles.mediaThumbnail} />
-                  )}
-                  <p className={styles.mediaName}>{media.name}</p>
-                </div>
+                <MediaCard key={media.id} media={media} />
               ))}
             </div>
             {totalPages > 1 && (
