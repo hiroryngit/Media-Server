@@ -4,7 +4,8 @@ import { tmpdir } from 'os';
 import path from 'path';
 
 const DATA_DIR = path.join(process.cwd(), 'data', 'encrypted');
-const MOUNT_DIR = path.join(process.cwd(), 'public', 'uploads');
+const MOUNT_DIR = path.join(process.cwd(), 'public', 'content');
+const UPLOAD_DIR = path.join(process.cwd(), 'upload');
 const SHARE_DIR = path.join(process.cwd(), 'public', 'share');
 
 /**
@@ -152,6 +153,59 @@ export function unmountEncryptedDir(userId: string): void {
 
   // 2. アンマウント成功後にのみ空のマウントポイントを削除
   rmdirSync(mountPoint);
+
+  // 3. uploadディレクトリもマウント中ならアンマウント
+  try {
+    unmountUploadDir(userId);
+  } catch {
+    // マウントされていなければ無視
+  }
+}
+
+/**
+ * アップロード用マウントポイントにgocryptfsをマウントする
+ * アップロードページアクセス時に呼び出す
+ * 既にマウント済みの場合は何もしない
+ */
+export function mountUploadDir(userId: string, hashedPassword: string): void {
+  const cipherDir = path.join(DATA_DIR, userId);
+  const mountPoint = path.join(UPLOAD_DIR, userId);
+
+  // 既にマウントされていたらスキップ
+  try {
+    execSync(`mountpoint -q "${mountPoint}" 2>/dev/null`);
+    return;
+  } catch {
+    // マウントされていない → 続行
+  }
+
+  mkdirSync(mountPoint, { recursive: true, mode: 0o755 });
+
+  withPasswordFile(hashedPassword, (passFile) => {
+    execSync(
+      `gocryptfs -q ${extpass(passFile)} "${cipherDir}" "${mountPoint}"`,
+      { stdio: 'pipe' }
+    );
+  });
+}
+
+/**
+ * アップロード用マウントを解除し、マウントポイントを削除する
+ * ffmpeg処理完了後、またはログアウト時に呼び出す
+ */
+export function unmountUploadDir(userId: string): void {
+  const mountPoint = path.join(UPLOAD_DIR, userId);
+
+  // マウントされていなければ何もしない
+  try {
+    execSync(`mountpoint -q "${mountPoint}" 2>/dev/null`);
+  } catch {
+    try { rmdirSync(mountPoint); } catch { /* 存在しなければ無視 */ }
+    return;
+  }
+
+  execSync(`fusermount -u -z "${mountPoint}"`, { stdio: 'pipe' });
+  try { rmdirSync(mountPoint); } catch { /* cleanup best-effort */ }
 }
 
 /**
@@ -208,6 +262,9 @@ export function unmountShareDir(ownerId: string): void {
 export function destroyEncryptedDir(userId: string): void {
   const cipherDir = path.join(DATA_DIR, userId);
   const mountPoint = path.join(MOUNT_DIR, userId);
+
+  // 0. uploadマウントがあればアンマウント
+  try { unmountUploadDir(userId); } catch { /* best-effort */ }
 
   // 1. まずアンマウント（失敗したら処理中止でゾンビ防止）
   try {

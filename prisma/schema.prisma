@@ -22,7 +22,7 @@ model Media {
   id            String     @id @default(uuid())
   type          String     // "image" | "video"
   name          String
-  fileSize      Int
+  fileSize      BigInt
   path          String
   thumbnailPath String?
   status        String     @default("processing") // "processing" | "ready" | "error"

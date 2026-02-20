@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
     maxAge: 60 * 60 * 24, // 24時間
   });
 
-  // メディアパスを/uploads/→/share/に変換
+  // メディアパスを/content/→/share/に変換
   const media = shareLink.media;
-  const sharePath = media.path.replace('/uploads/', '/share/');
-  const shareThumbnail = media.thumbnailPath?.replace('/uploads/', '/share/') || null;
+  const sharePath = media.path.replace('/content/', '/share/');
+  const shareThumbnail = media.thumbnailPath?.replace('/content/', '/share/') || null;
 
   return NextResponse.json({
     media: {

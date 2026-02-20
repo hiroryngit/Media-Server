@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   for (const media of mediaItems) {
     try {
       if (media.type === 'video') {
-        // HLS: pathが /uploads/{userId}/{baseName}/index.m3u8 の場合、
+        // HLS: pathが /content/{userId}/{baseName}/index.m3u8 の場合、
         // ディレクトリごと削除（tsセグメント含む）
         const m3u8Path = path.join(process.cwd(), 'public', media.path);
         const hlsDir = path.dirname(m3u8Path);

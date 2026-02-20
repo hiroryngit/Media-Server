@@ -10,6 +10,8 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp
 const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
 
+const CHUNK_SIZE = 50 * 1024 * 1024; // 50MB
+
 type FileEntry = {
   id: string;
   file: File;
@@ -71,56 +73,69 @@ export default function UploadClient() {
     e.target.value = '';
   };
 
-  const uploadOne = (entry: FileEntry): Promise<void> => {
-    return new Promise((resolve) => {
-      const formData = new FormData();
-      formData.append('file', entry.file);
+  const uploadOne = async (entry: FileEntry): Promise<void> => {
+    setFiles((prev) =>
+      prev.map((f) => (f.id === entry.id ? { ...f, status: 'uploading' } : f))
+    );
 
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-          const progress = Math.round((e.loaded / e.total) * 100);
-          setFiles((prev) =>
-            prev.map((f) => (f.id === entry.id ? { ...f, progress } : f))
-          );
-        }
+    try {
+      // 1. アップロード初期化
+      const initRes = await fetch('/api/upload/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: entry.file.name,
+          type: entry.file.type,
+          size: entry.file.size,
+        }),
       });
+      if (!initRes.ok) {
+        const data = await initRes.json();
+        throw new Error(data.error || 'アップロードの初期化に失敗しました');
+      }
+      const { uploadId } = await initRes.json();
 
-      xhr.addEventListener('load', () => {
-        if (xhr.status === 200) {
-          setFiles((prev) =>
-            prev.map((f) => (f.id === entry.id ? { ...f, status: 'done', progress: 100 } : f))
-          );
-        } else {
-          let errorMsg = 'アップロードに失敗しました';
-          try {
-            const res = JSON.parse(xhr.responseText);
-            errorMsg = res.error || errorMsg;
-          } catch { /* use default */ }
-          setFiles((prev) =>
-            prev.map((f) => (f.id === entry.id ? { ...f, status: 'error', error: errorMsg } : f))
-          );
+      // 2. チャンク送信
+      const totalChunks = Math.ceil(entry.file.size / CHUNK_SIZE);
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, entry.file.size);
+        const chunk = entry.file.slice(start, end);
+
+        const chunkRes = await fetch(`/api/upload/chunk?id=${uploadId}&index=${i}`, {
+          method: 'POST',
+          body: chunk,
+        });
+        if (!chunkRes.ok) {
+          throw new Error('チャンクのアップロードに失敗しました');
         }
-        resolve();
-      });
 
-      xhr.addEventListener('error', () => {
+        const progress = Math.round(((i + 1) / totalChunks) * 100);
         setFiles((prev) =>
-          prev.map((f) =>
-            f.id === entry.id ? { ...f, status: 'error', error: 'ネットワークエラー' } : f
-          )
+          prev.map((f) => (f.id === entry.id ? { ...f, progress } : f))
         );
-        resolve();
+      }
+
+      // 3. アップロード完了
+      const completeRes = await fetch('/api/upload/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadId }),
       });
+      if (!completeRes.ok) {
+        const data = await completeRes.json();
+        throw new Error(data.error || 'アップロードの完了処理に失敗しました');
+      }
 
       setFiles((prev) =>
-        prev.map((f) => (f.id === entry.id ? { ...f, status: 'uploading' } : f))
+        prev.map((f) => (f.id === entry.id ? { ...f, status: 'done', progress: 100 } : f))
       );
-
-      xhr.open('POST', '/api/upload');
-      xhr.send(formData);
-    });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'ネットワークエラー';
+      setFiles((prev) =>
+        prev.map((f) => (f.id === entry.id ? { ...f, status: 'error', error: errorMsg } : f))
+      );
+    }
   };
 
   const handleUpload = async () => {
