@@ -9,6 +9,7 @@ type Media = {
   type: string;
   name: string;
   path: string;
+  thumbnailPath: string | null;
 };
 
 export default function DeleteClient({ mediaList }: { mediaList: Media[] }) {
@@ -102,10 +103,12 @@ export default function DeleteClient({ mediaList }: { mediaList: Media[] }) {
                 className={styles.checkbox}
               />
             </div>
-            {media.type === 'image' ? (
+            {media.type === 'video' && media.thumbnailPath ? (
+              <img src={media.thumbnailPath} alt={media.name} className={styles.mediaThumbnail} />
+            ) : media.type === 'image' ? (
               <img src={media.path} alt={media.name} className={styles.mediaThumbnail} />
             ) : (
-              <video src={media.path} className={styles.mediaThumbnail} />
+              <div className={styles.mediaThumbnail} style={{ background: 'rgba(128,128,128,0.1)' }} />
             )}
             <p className={styles.mediaName}>{media.name}</p>
           </div>

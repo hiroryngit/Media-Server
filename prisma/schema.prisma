@@ -19,14 +19,16 @@ model User {
 }
 
 model Media {
-  id           String   @id @default(uuid())
-  type         String   // "image" | "video"
-  name         String
-  fileSize     Int
-  path         String
-  isBookmarked Boolean  @default(false)
-  isShared     Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
+  id            String   @id @default(uuid())
+  type          String   // "image" | "video"
+  name          String
+  fileSize      Int
+  path          String
+  thumbnailPath String?
+  status        String   @default("processing") // "processing" | "ready" | "error"
+  isBookmarked  Boolean  @default(false)
+  isShared      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
 }

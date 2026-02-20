@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import { prisma } from '@/app/lib/db';
-import { unlink } from 'fs/promises';
+import { unlink, rm } from 'fs/promises';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -37,9 +37,24 @@ export async function POST(request: NextRequest) {
 
   // Delete files from filesystem
   for (const media of mediaItems) {
-    const filePath = path.join(process.cwd(), 'public', media.path);
     try {
-      await unlink(filePath);
+      if (media.type === 'video') {
+        // HLS: pathが /uploads/{userId}/{baseName}/index.m3u8 の場合、
+        // ディレクトリごと削除（tsセグメント含む）
+        const m3u8Path = path.join(process.cwd(), 'public', media.path);
+        const hlsDir = path.dirname(m3u8Path);
+        await rm(hlsDir, { recursive: true, force: true });
+
+        // サムネイルも削除
+        if (media.thumbnailPath) {
+          const thumbPath = path.join(process.cwd(), 'public', media.thumbnailPath);
+          await unlink(thumbPath).catch(() => {});
+        }
+      } else {
+        // 画像: ファイル単体を削除
+        const filePath = path.join(process.cwd(), 'public', media.path);
+        await unlink(filePath).catch(() => {});
+      }
     } catch {
       // File may already be missing, continue
     }
