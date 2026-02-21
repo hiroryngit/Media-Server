@@ -1,31 +1,37 @@
-import { cookies } from 'next/headers';
 import { prisma } from '@/app/lib/db';
-import { mkdir, readFile, readdir, rm, appendFile } from 'fs/promises';
+import { mkdir, readFile, readdir, rm, appendFile, unlink } from 'fs/promises';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
 import { processImage, processVideo } from '@/app/lib/media-processing';
 import { unmountUploadDir } from '@/app/lib/gocryptfs';
+import { shouldUnmountUpload } from '@/app/lib/upload-mount-state';
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 
+/**
+ * uploadId から userId を解決する
+ */
+async function resolveUserId(uploadId: string): Promise<string | null> {
+  try {
+    const metaPath = path.join(process.cwd(), 'upload', '_meta', uploadId);
+    return (await readFile(metaPath, 'utf-8')).trim();
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('session_id')?.value;
-
-  if (!userId) {
-    return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 });
-  }
-
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    return NextResponse.json({ error: 'ユーザーが見つかりません' }, { status: 401 });
-  }
-
   const { uploadId } = await request.json();
 
   if (!uploadId) {
     return NextResponse.json({ error: 'アップロードIDが必要です' }, { status: 400 });
+  }
+
+  // uploadId から userId を解決（クッキー不要）
+  const userId = await resolveUserId(uploadId);
+  if (!userId) {
+    return NextResponse.json({ error: '無効なアップロードIDです' }, { status: 400 });
   }
 
   const chunkDir = path.join(process.cwd(), 'upload', userId, '_chunks', uploadId);
@@ -63,6 +69,9 @@ export async function POST(request: NextRequest) {
   // チャンクディレクトリ削除
   await rm(chunkDir, { recursive: true, force: true });
 
+  // ルックアップファイル削除
+  await unlink(path.join(process.cwd(), 'upload', '_meta', uploadId)).catch(() => {});
+
   // DB登録（配信用パスは /content/ を使用）
   const type = ALLOWED_IMAGE_TYPES.includes(meta.type) ? 'image' : 'video';
   const tempDbPath = `/content/${userId}/${tempName}`;
@@ -88,14 +97,16 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('メディア処理エラー:', error);
     } finally {
-      // ffmpeg処理完了後にuploadマウントをアンマウント
-      try {
-        unmountUploadDir(userId);
-      } catch {
-        console.error('uploadディレクトリのアンマウントに失敗');
+      // DB・マウント状態を確認し、アンマウントすべきならする
+      if (await shouldUnmountUpload(userId)) {
+        try {
+          unmountUploadDir(userId);
+        } catch {
+          console.error('uploadディレクトリのアンマウントに失敗');
+        }
       }
     }
   });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, mediaId: media.id });
 }

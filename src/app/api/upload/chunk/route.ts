@@ -1,25 +1,24 @@
-import { cookies } from 'next/headers';
-import { prisma } from '@/app/lib/db';
 import { createWriteStream } from 'fs';
-import { stat } from 'fs/promises';
+import { readFile, stat } from 'fs/promises';
 import { Readable } from 'stream';
 import { pipeline } from 'stream/promises';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 
+/**
+ * uploadId から userId を解決する
+ * init 時に保存した upload/_meta/{uploadId} ファイルを参照
+ */
+async function resolveUserId(uploadId: string): Promise<string | null> {
+  try {
+    const metaPath = path.join(process.cwd(), 'upload', '_meta', uploadId);
+    return (await readFile(metaPath, 'utf-8')).trim();
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(request: NextRequest) {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get('session_id')?.value;
-
-  if (!userId) {
-    return NextResponse.json({ error: 'ログインが必要です' }, { status: 401 });
-  }
-
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) {
-    return NextResponse.json({ error: 'ユーザーが見つかりません' }, { status: 401 });
-  }
-
   const { searchParams } = new URL(request.url);
   const uploadId = searchParams.get('id');
   const index = searchParams.get('index');
@@ -28,7 +27,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'パラメータが不足しています' }, { status: 400 });
   }
 
-  // チャンクディレクトリの存在確認（uploadIdの検証）
+  // uploadId から userId を解決（クッキー不要）
+  const userId = await resolveUserId(uploadId);
+  if (!userId) {
+    return NextResponse.json({ error: '無効なアップロードIDです' }, { status: 400 });
+  }
+
+  // チャンクディレクトリの存在確認
   const chunkDir = path.join(process.cwd(), 'upload', userId, '_chunks', uploadId);
   try {
     await stat(chunkDir);

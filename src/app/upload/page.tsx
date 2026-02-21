@@ -21,10 +21,17 @@ export default async function UploadPage() {
   // アップロードページアクセス時にuploadディレクトリをマウント
   mountUploadDir(userId, user.password);
 
+  // 処理中のメディアを取得
+  const processingMedia = await prisma.media.findMany({
+    where: { userId, status: 'processing' },
+    orderBy: { createdAt: 'desc' },
+    select: { id: true, name: true, type: true, status: true, thumbnailPath: true },
+  });
+
   return (
     <>
       <HeaderServer />
-      <UploadClient />
+      <UploadClient initialProcessing={processingMedia} />
     </>
   );
 }

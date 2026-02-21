@@ -43,5 +43,10 @@ export async function POST(request: NextRequest) {
   const meta = { name, type, size, userId };
   await writeFile(path.join(chunkDir, 'meta.json'), JSON.stringify(meta));
 
+  // uploadId → userId のルックアップを保存（クッキー不要で認証するため）
+  const metaDir = path.join(process.cwd(), 'upload', '_meta');
+  await mkdir(metaDir, { recursive: true });
+  await writeFile(path.join(metaDir, uploadId), userId);
+
   return NextResponse.json({ uploadId });
 }

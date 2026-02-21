@@ -19,7 +19,7 @@ export default async function Dashboard({
   const params = await searchParams;
   const currentPage = Math.max(1, Number(params.page) || 1);
 
-  const [mediaList, totalCount] = userId
+  const [mediaList, totalCount, processingCount] = userId
     ? await Promise.all([
         prisma.media.findMany({
           where: { userId },
@@ -28,8 +28,9 @@ export default async function Dashboard({
           take: ITEMS_PER_PAGE,
         }),
         prisma.media.count({ where: { userId } }),
+        prisma.media.count({ where: { userId, status: 'processing' } }),
       ])
-    : [[], 0];
+    : [[], 0, 0];
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
@@ -37,6 +38,11 @@ export default async function Dashboard({
     <>
       <HeaderServer />
       <main className={styles.main}>
+        {processingCount > 0 && (
+          <div className={styles.processingBanner}>
+            {processingCount}件のファイルを処理中です
+          </div>
+        )}
         {mediaList.length === 0 && currentPage === 1 ? (
           <div className={styles.emptyState}>
             <p className={styles.emptyMessage}>コンテンツがありません</p>

@@ -145,7 +145,7 @@ export function changeEncryptedDirPassword(
  * 順番厳守: 1.アンマウント → 2.rmdir（空ディレクトリ削除のみ）
  * rmdirは空でないディレクトリを削除できないため、万一アンマウント前に呼ばれてもデータは消えない
  */
-export function unmountEncryptedDir(userId: string): void {
+export function unmountEncryptedDir(userId: string, shouldUnmountUpload: boolean): void {
   const mountPoint = path.join(MOUNT_DIR, userId);
 
   // 1. 必ず先にアンマウント
@@ -154,11 +154,13 @@ export function unmountEncryptedDir(userId: string): void {
   // 2. アンマウント成功後にのみ空のマウントポイントを削除
   rmdirSync(mountPoint);
 
-  // 3. uploadディレクトリもマウント中ならアンマウント
-  try {
-    unmountUploadDir(userId);
-  } catch {
-    // マウントされていなければ無視
+  // 3. uploadディレクトリのアンマウントは状態に応じて判断
+  if (shouldUnmountUpload) {
+    try {
+      unmountUploadDir(userId);
+    } catch {
+      // マウントされていなければ無視
+    }
   }
 }
 

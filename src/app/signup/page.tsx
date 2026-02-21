@@ -1,16 +1,13 @@
 'use client';
 import { registerUser } from './actions';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from "./signup.module.scss"; // 専用のSassを読み込む
 
 export default function SignUpPage() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   const handleSignUp = async (formData: FormData) => {
-    const username = formData.get('username');
     const password = formData.get('password');
     const confirmPassword = formData.get('confirmPassword');
 
@@ -20,11 +17,13 @@ export default function SignUpPage() {
       return;
     }
 
-    // ここで保存処理（今はログ出すだけ）
-    console.log("登録データ:", { username, password });
-    
-    // 成功したらログイン（トップ）へ
-    router.push('/');
+    // サーバーアクションを呼び出し
+    const result = await registerUser(formData);
+
+    // エラーが返ってきた場合は表示
+    if (result?.error) {
+      setError(result.error);
+    }
   };
 
   return (
@@ -34,7 +33,7 @@ export default function SignUpPage() {
 
         {error && <p className={styles.errorMessage}>{error}</p>}
 
-        <form action={registerUser}>
+        <form action={handleSignUp}>
           <div className={styles.formGroup}>
             <label htmlFor="username">ユーザーネーム</label>
             <input type="text" id="username" name="username" placeholder="ニックネームなど" required />
