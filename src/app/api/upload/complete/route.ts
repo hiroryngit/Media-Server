@@ -1,5 +1,5 @@
 import { prisma } from '@/app/lib/db';
-import { mkdir, readFile, readdir, rm, appendFile, unlink } from 'fs/promises';
+import { mkdir, readFile, readdir, rm, rmdir, appendFile, unlink } from 'fs/promises';
 import path from 'path';
 import { NextRequest, NextResponse } from 'next/server';
 import { after } from 'next/server';
@@ -68,6 +68,15 @@ export async function POST(request: NextRequest) {
 
   // チャンクディレクトリ削除
   await rm(chunkDir, { recursive: true, force: true });
+
+  // _chunksディレクトリが空なら削除（content側にゴミを見せない）
+  const chunksParent = path.join(process.cwd(), 'upload', userId, '_chunks');
+  try {
+    const remaining = await readdir(chunksParent);
+    if (remaining.length === 0) {
+      await rmdir(chunksParent).catch(() => {});
+    }
+  } catch { /* 存在しなければ無視 */ }
 
   // ルックアップファイル削除
   await unlink(path.join(process.cwd(), 'upload', '_meta', uploadId)).catch(() => {});
